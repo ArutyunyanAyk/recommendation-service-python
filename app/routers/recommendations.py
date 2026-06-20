@@ -12,10 +12,10 @@ from app.services import (
     convert_recipes_to_dicts,
 )
 
-router = APIRouter()
+router = APIRouter(prefix="/recommend", tags=["recommendations"])
 
 
-@router.get("/recommend/random-recipe", response_model=RecipeRecommendation)
+@router.get("/random-recipe", response_model=RecipeRecommendation)
 def get_recommend_random_recipe(max_time: int = None, meal_role: str = None):
     recipe = recommend_random_recipe(recipes, max_time, meal_role)
     if recipe is None:
@@ -23,7 +23,7 @@ def get_recommend_random_recipe(max_time: int = None, meal_role: str = None):
     return {"recipe": recipe}
 
 
-@router.get("/recommend/random-meal", response_model=MealRecommendation)
+@router.get("/random-meal", response_model=MealRecommendation)
 def get_recommend_random_meal():
     meal = recommend_random_meal(recipes)
     if meal is None:
@@ -34,7 +34,7 @@ def get_recommend_random_meal():
     return {"meal": meal}
 
 
-@router.post("/recommend/random-recipe/from-list",
+@router.post("/random-recipe/from-list",
              response_model=RecipeRecommendation)
 def random_recipes_from_list(request: RecipeListRequest, max_time: int = None,
                              meal_role: str = None):
@@ -48,7 +48,7 @@ def random_recipes_from_list(request: RecipeListRequest, max_time: int = None,
     return {"recipe": recipe}
 
 
-@router.post("/recommend/random-meal/from-list",
+@router.post("/random-meal/from-list",
              response_model=MealRecommendation)
 def random_meal_from_list(request: RecipeListRequest):
     recipes_from_request = convert_recipes_to_dicts(request.recipes)

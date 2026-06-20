@@ -4,15 +4,15 @@ from app.schemas import Recipe
 from app.services import find_recipe_by_id
 
 
-router = APIRouter()
+router = APIRouter(prefix="/recipes", tags=["recipes"])
 
 
-@router.get("/recipes", response_model=list[Recipe])
+@router.get("", response_model=list[Recipe])
 def get_recipes():
     return recipes
 
 
-@router.get("/recipes/{recipe_id}", response_model=Recipe)
+@router.get("/{recipe_id}", response_model=Recipe)
 def get_recipe(recipe_id: int):
     recipe = find_recipe_by_id(recipes, recipe_id)
 
