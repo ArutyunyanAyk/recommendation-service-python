@@ -1,47 +1,21 @@
-from fastapi import FastAPI, HTTPException
-from services import (
-    find_recipe_by_id,
-    recommend_random_recipe,
-    recommend_random_meal,
-    convert_recipes_to_dicts,
-)
-from data import recipes
-from schemas import (
-    Recipe,
+from fastapi import APIRouter, HTTPException
+
+from app.data import recipes
+from app.schemas import (
     RecipeRecommendation,
     MealRecommendation,
     RecipeListRequest,
 )
+from app.services import (
+    recommend_random_recipe,
+    recommend_random_meal,
+    convert_recipes_to_dicts,
+)
 
-app = FastAPI()
-
-
-@app.get("/health")
-def health_check():
-    return {"status": "ok"}
-
-
-@app.get("/hello")
-def hello_check():
-    return {"message": "Hello, World!"}
+router = APIRouter()
 
 
-@app.get("/recipes", response_model=list[Recipe])
-def get_recipes():
-    return recipes
-
-
-@app.get("/recipes/{recipe_id}", response_model=Recipe)
-def get_recipe(recipe_id: int):
-    recipe = find_recipe_by_id(recipes, recipe_id)
-
-    if recipe is None:
-        raise HTTPException(status_code=404, detail="Recipe not found")
-
-    return recipe
-
-
-@app.get("/recommend/random-recipe", response_model=RecipeRecommendation)
+@router.get("/recommend/random-recipe", response_model=RecipeRecommendation)
 def get_recommend_random_recipe(max_time: int = None, meal_role: str = None):
     recipe = recommend_random_recipe(recipes, max_time, meal_role)
     if recipe is None:
@@ -49,7 +23,7 @@ def get_recommend_random_recipe(max_time: int = None, meal_role: str = None):
     return {"recipe": recipe}
 
 
-@app.get("/recommend/random-meal", response_model=MealRecommendation)
+@router.get("/recommend/random-meal", response_model=MealRecommendation)
 def get_recommend_random_meal():
     meal = recommend_random_meal(recipes)
     if meal is None:
@@ -60,8 +34,8 @@ def get_recommend_random_meal():
     return {"meal": meal}
 
 
-@app.post("/recommend/random-recipe/from-list",
-          response_model=RecipeRecommendation)
+@router.post("/recommend/random-recipe/from-list",
+             response_model=RecipeRecommendation)
 def random_recipes_from_list(request: RecipeListRequest, max_time: int = None,
                              meal_role: str = None):
     recipes_from_request = convert_recipes_to_dicts(request.recipes)
@@ -74,8 +48,8 @@ def random_recipes_from_list(request: RecipeListRequest, max_time: int = None,
     return {"recipe": recipe}
 
 
-@app.post("/recommend/random-meal/from-list",
-          response_model=MealRecommendation)
+@router.post("/recommend/random-meal/from-list",
+             response_model=MealRecommendation)
 def random_meal_from_list(request: RecipeListRequest):
     recipes_from_request = convert_recipes_to_dicts(request.recipes)
     meal = recommend_random_meal(recipes_from_request)
