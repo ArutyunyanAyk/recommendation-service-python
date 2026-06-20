@@ -12,6 +12,7 @@ def recommend_random_recipe(
     recipes,
     max_time: int = None,
     meal_role: str = None,
+    tag=None
 ):
     filtered_recipes = []
     for recipe in recipes:
@@ -19,6 +20,8 @@ def recommend_random_recipe(
             (max_time is None or recipe["cooking_time"] <= max_time)
             and
             (meal_role is None or recipe["meal_role"] == meal_role)
+            and
+            (tag is None or tag in recipe.get("tags", []))
         ):
             filtered_recipes.append(recipe)
     if not filtered_recipes:

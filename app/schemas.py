@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Literal
 
 
@@ -19,6 +19,7 @@ class Recipe(BaseModel):
     title: str
     cooking_time: int
     meal_role: MealRole
+    tags: list[str] = Field(default_factory=list)
 
 
 class RecipeRecommendation(BaseModel):

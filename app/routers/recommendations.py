@@ -16,8 +16,9 @@ router = APIRouter(prefix="/recommend", tags=["recommendations"])
 
 
 @router.get("/random-recipe", response_model=RecipeRecommendation)
-def get_recommend_random_recipe(max_time: int = None, meal_role: str = None):
-    recipe = recommend_random_recipe(recipes, max_time, meal_role)
+def get_recommend_random_recipe(max_time: int = None, meal_role: str = None,
+                                tag: str = None):
+    recipe = recommend_random_recipe(recipes, max_time, meal_role, tag)
     if recipe is None:
         raise HTTPException(status_code=404, detail="No matching recipe found")
     return {"recipe": recipe}
@@ -37,9 +38,10 @@ def get_recommend_random_meal():
 @router.post("/random-recipe/from-list",
              response_model=RecipeRecommendation)
 def random_recipes_from_list(request: RecipeListRequest, max_time: int = None,
-                             meal_role: str = None):
+                             meal_role: str = None, tag: str = None):
     recipes_from_request = convert_recipes_to_dicts(request.recipes)
-    recipe = recommend_random_recipe(recipes_from_request, max_time, meal_role)
+    recipe = recommend_random_recipe(recipes_from_request, max_time, meal_role,
+                                     tag)
     if recipe is None:
         raise HTTPException(
             status_code=404,
