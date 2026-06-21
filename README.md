@@ -13,54 +13,104 @@ Python/FastAPI сервис для проекта **What's for Cooking**.
 - FastAPI
 - Pydantic
 - Uvicorn
+- Pytest
+- HTTPX
 
 ## Структура проекта
 
 ```text
 recommendation-service-python/
-  main.py
-  data.py
-  services.py
-  schemas.py
-  requirements.txt
+  app/
+    __init__.py
+    main.py
+    data.py
+    schemas.py
+    services.py
+    routers/
+      __init__.py
+      system.py
+      recipes.py
+      recommendations.py
+
+  tests/
+    test_api.py
+
   README.md
+  requirements.txt
+  pytest.ini
+  .gitignore
 ```
 
 ## Что делает каждый файл
 
 ```text
-main.py
+app/main.py
 ```
 
-Главный файл FastAPI-приложения.  
-Здесь находятся endpoints.
+Главная точка входа FastAPI-приложения.
+Создаёт `app = FastAPI()` и подключает routers.
 
 ```text
-data.py
+app/routers/system.py
 ```
 
-Временные тестовые данные.  
-Пока здесь хранится список рецептов.
+System endpoints, например `/health`.
 
 ```text
-services.py
+app/routers/recipes.py
 ```
 
-Логика сервиса.  
-Здесь находятся функции поиска, фильтрации и подбора рецептов.
+Endpoints для получения рецептов:
 
 ```text
-schemas.py
+GET /recipes
+GET /recipes/{recipe_id}
 ```
 
-Pydantic-схемы.  
-Описывают структуру данных: Recipe, Meal, RecipeRecommendation и другие.
+```text
+app/routers/recommendations.py
+```
+
+Endpoints для рекомендаций рецептов и meal-комбинаций.
+
+```text
+app/data.py
+```
+
+Временные тестовые данные рецептов.
+
+```text
+app/services.py
+```
+
+Бизнес-логика сервиса: поиск, фильтрация, подбор случайного рецепта и сборка meal.
+
+```text
+app/schemas.py
+```
+
+Pydantic-схемы.
+Описывают структуру данных: `Recipe`, `Meal`, `RecipeRecommendation`, `MealRecommendation`, request-схемы и допустимые значения `meal_role`.
+
+```text
+tests/test_api.py
+```
+
+Автотесты для проверки API endpoints.
 
 ```text
 requirements.txt
 ```
 
-Список Python-библиотек, которые нужны для запуска проекта.
+Список Python-зависимостей проекта.
+
+```text
+pytest.ini
+```
+
+Настройка pytest, чтобы тесты могли импортировать приложение из папки `app`.
+
+---
 
 ## Как запустить проект
 
@@ -93,7 +143,7 @@ pip install -r requirements.txt
 ### 4. Запустить сервер
 
 ```bash
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 После запуска сервер будет доступен по адресу:
@@ -107,6 +157,24 @@ http://127.0.0.1:8000
 ```text
 http://127.0.0.1:8000/docs
 ```
+
+---
+
+## Как запустить тесты
+
+```bash
+pytest
+```
+
+Подробный вывод:
+
+```bash
+pytest -v
+```
+
+Тесты проверяют основные endpoints, фильтры, ошибки `404/422` и POST-запросы с body.
+
+---
 
 ## Endpoints
 
@@ -134,35 +202,41 @@ GET /health
 GET /recipes
 ```
 
-Возвращает список тестовых рецептов из `data.py`.
+Возвращает список тестовых рецептов из `app/data.py`.
 
 ```text
 GET /recipes/{recipe_id}
 ```
 
-Возвращает один рецепт по id.
+Возвращает один рецепт по `id`.
+
+Если рецепт не найден, возвращает `404`.
 
 ---
 
-### Recommendations
+### Recommendations from local data
 
 ```text
 GET /recommend/random-recipe
 ```
 
-Возвращает случайный рецепт из локального списка `data.py`.
+Возвращает случайный рецепт из локального списка `app/data.py`.
 
 Поддерживает фильтры:
 
 ```text
 max_time
 meal_role
+tag
 ```
 
-Пример:
+Примеры:
 
 ```text
-GET /recommend/random-recipe?max_time=20&meal_role=full_meal
+GET /recommend/random-recipe?max_time=20
+GET /recommend/random-recipe?meal_role=protein
+GET /recommend/random-recipe?tag=quick
+GET /recommend/random-recipe?max_time=20&tag=quick
 ```
 
 ---
@@ -171,7 +245,16 @@ GET /recommend/random-recipe?max_time=20&meal_role=full_meal
 GET /recommend/random-meal
 ```
 
-Собирает meal-комбинацию из локального списка `data.py`.
+Собирает meal-комбинацию из локального списка `app/data.py`.
+
+Минимально нужны:
+
+```text
+protein
+carbs
+```
+
+Если есть `vegetables`, они добавляются дополнительно.
 
 Пример ответа:
 
@@ -182,19 +265,22 @@ GET /recommend/random-meal
       "id": 2,
       "title": "Котлеты",
       "cooking_time": 40,
-      "meal_role": "protein"
+      "meal_role": "protein",
+      "tags": ["dinner", "high_protein"]
     },
     "carbs": {
       "id": 3,
       "title": "Макароны",
       "cooking_time": 15,
-      "meal_role": "carbs"
+      "meal_role": "carbs",
+      "tags": ["cheap", "quick"]
     },
     "vegetables": {
       "id": 4,
       "title": "Овощной салат",
       "cooking_time": 10,
-      "meal_role": "vegetables"
+      "meal_role": "vegetables",
+      "tags": ["vegetables", "quick", "low_calorie"]
     }
   }
 }
@@ -210,6 +296,14 @@ POST /recommend/random-recipe/from-list
 
 Принимает список рецептов в body и возвращает случайный рецепт из этого списка.
 
+Фильтры передаются через query parameters:
+
+```text
+max_time
+meal_role
+tag
+```
+
 Пример body:
 
 ```json
@@ -219,15 +313,98 @@ POST /recommend/random-recipe/from-list
       "id": 1,
       "title": "Омлет",
       "cooking_time": 10,
-      "meal_role": "full_meal"
+      "meal_role": "full_meal",
+      "tags": ["breakfast", "quick", "high_protein"]
     },
     {
       "id": 2,
       "title": "Котлеты",
       "cooking_time": 40,
-      "meal_role": "protein"
+      "meal_role": "protein",
+      "tags": ["dinner", "high_protein"]
     }
   ]
+}
+```
+
+Пример запроса:
+
+```text
+POST /recommend/random-recipe/from-list?tag=quick
+```
+
+---
+
+```text
+POST /recommend/random-meal/from-list
+```
+
+Принимает список рецептов в body и пытается собрать meal-комбинацию.
+
+Пример body:
+
+```json
+{
+  "recipes": [
+    {
+      "id": 1,
+      "title": "Котлеты",
+      "cooking_time": 40,
+      "meal_role": "protein",
+      "tags": ["dinner", "high_protein"]
+    },
+    {
+      "id": 2,
+      "title": "Макароны",
+      "cooking_time": 15,
+      "meal_role": "carbs",
+      "tags": ["cheap", "quick"]
+    }
+  ]
+}
+```
+
+---
+
+### Request-based recommendations
+
+Эти endpoints удобнее для будущей связки с Java backend, потому что все данные передаются одним JSON body.
+
+```text
+POST /recommend/random-recipe/by-request
+```
+
+Принимает список рецептов и фильтры в body.
+
+Пример body:
+
+```json
+{
+  "recipes": [
+    {
+      "id": 1,
+      "title": "Омлет",
+      "cooking_time": 10,
+      "meal_role": "full_meal",
+      "tags": ["breakfast", "quick", "high_protein"]
+    },
+    {
+      "id": 2,
+      "title": "Котлеты",
+      "cooking_time": 40,
+      "meal_role": "protein",
+      "tags": ["dinner", "high_protein"]
+    },
+    {
+      "id": 3,
+      "title": "Макароны",
+      "cooking_time": 15,
+      "meal_role": "carbs",
+      "tags": ["cheap", "quick"]
+    }
+  ],
+  "max_time": 20,
+  "tag": "quick"
 }
 ```
 
@@ -239,7 +416,8 @@ POST /recommend/random-recipe/from-list
     "id": 1,
     "title": "Омлет",
     "cooking_time": 10,
-    "meal_role": "full_meal"
+    "meal_role": "full_meal",
+    "tags": ["breakfast", "quick", "high_protein"]
   }
 }
 ```
@@ -247,19 +425,42 @@ POST /recommend/random-recipe/from-list
 ---
 
 ```text
-POST /recommend/random-meal/from-list
+POST /recommend/random-meal/by-request
 ```
 
-Принимает список рецептов в body и пытается собрать meal-комбинацию.
+Принимает список рецептов в body и возвращает meal-комбинацию.
 
-Для успешной сборки нужны минимум:
+Пример body:
 
-```text
-protein
-carbs
+```json
+{
+  "recipes": [
+    {
+      "id": 1,
+      "title": "Котлеты",
+      "cooking_time": 40,
+      "meal_role": "protein",
+      "tags": ["dinner", "high_protein"]
+    },
+    {
+      "id": 2,
+      "title": "Макароны",
+      "cooking_time": 15,
+      "meal_role": "carbs",
+      "tags": ["cheap", "quick"]
+    },
+    {
+      "id": 3,
+      "title": "Овощной салат",
+      "cooking_time": 10,
+      "meal_role": "vegetables",
+      "tags": ["vegetables", "quick", "low_calorie"]
+    }
+  ]
+}
 ```
 
-Если есть `vegetables`, они добавляются дополнительно.
+---
 
 ## Пример ролей блюда
 
@@ -274,32 +475,65 @@ snack       — перекус
 drink       — напиток
 ```
 
+`meal_role` в Pydantic-схемах ограничен через `Literal`, поэтому рецепты в request body проходят проверку только с разрешёнными значениями.
+
+---
+
+## Пример тегов рецептов
+
+```text
+quick         — быстрое блюдо
+high_protein  — много белка
+cheap         — недорогое
+breakfast     — завтрак
+dinner        — ужин
+low_calorie   — низкокалорийное
+comfort_food  — сытное / домашнее
+healthy       — более полезное
+```
+
+Теги используются для фильтрации рекомендаций:
+
+```text
+GET /recommend/random-recipe?tag=quick
+POST /recommend/random-recipe/by-request
+```
+
+---
+
 ## Зачем нужен этот сервис
 
-В будущем основной backend, например Java/Spring Boot, сможет отправлять сюда список рецептов.
+В будущем основной backend, например Java/Spring Boot, сможет отправлять сюда список рецептов и фильтры.
 
 Схема работы:
 
 ```text
 Java backend
 ↓
-отправляет список рецептов
+отправляет список рецептов и фильтры
 ↓
-Python FastAPI service
+Python FastAPI recommendation service
 ↓
 выбирает рецепт или meal-комбинацию
 ↓
 возвращает результат Java backend
 ```
 
+---
+
 ## Текущий статус
 
 Сейчас сервис умеет:
 
-- запускаться через FastAPI;
-- отдавать тестовые рецепты;
-- искать рецепт по id;
-- выбирать случайный рецепт;
-- фильтровать рецепты по времени и роли;
-- собирать meal-комбинацию;
-- принимать список рецептов через POST-запрос.
+* запускаться через FastAPI;
+* использовать структуру `app/`, `routers`, `services.py`, `schemas.py`;
+* отдавать тестовые рецепты;
+* искать рецепт по id;
+* выбирать случайный рецепт;
+* фильтровать рецепты по времени, роли и тегу;
+* собирать meal-комбинацию;
+* принимать список рецептов через POST-запрос;
+* принимать request body с рецептами и фильтрами;
+* валидировать `meal_role`;
+* возвращать ошибки `404` и `422`;
+* проверяться автотестами через `pytest`.
