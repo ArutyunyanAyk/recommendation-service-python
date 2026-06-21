@@ -368,3 +368,46 @@ def test_post_random_recipe_from_list_with_tag_filter():
 
     assert "recipe" in data
     assert "quick" in data["recipe"]["tags"]
+
+
+def test_post_random_recipe_by_request():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Омлет",
+                "cooking_time": 10,
+                "meal_role": "full_meal",
+                "tags": ["breakfast", "quick", "high_protein"]
+            },
+            {
+                "id": 2,
+                "title": "Котлеты",
+                "cooking_time": 40,
+                "meal_role": "protein",
+                "tags": ["dinner", "high_protein"]
+            },
+            {
+                "id": 3,
+                "title": "Макароны",
+                "cooking_time": 15,
+                "meal_role": "carbs",
+                "tags": ["cheap", "quick"]
+            }
+        ],
+        "max_time": 20,
+        "tag": "quick"
+    }
+
+    response = client.post(
+        "/recommend/random-recipe/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "recipe" in data
+    assert data["recipe"]["cooking_time"] <= 20
+    assert "quick" in data["recipe"]["tags"]

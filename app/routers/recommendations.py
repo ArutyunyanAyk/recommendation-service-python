@@ -5,6 +5,7 @@ from app.schemas import (
     RecipeRecommendation,
     MealRecommendation,
     RecipeListRequest,
+    RecipeRecommendationRequest,
 )
 from app.services import (
     recommend_random_recipe,
@@ -62,3 +63,22 @@ def random_meal_from_list(request: RecipeListRequest):
                    " the provided list",
         )
     return {"meal": meal}
+
+
+@router.post("/random-recipe/by-request",
+             response_model=RecipeRecommendation)
+def random_recipe_by_request(request: RecipeRecommendationRequest):
+    recipes_from_request = convert_recipes_to_dicts(request.recipes)
+    recipe = recommend_random_recipe(
+        recipes_from_request,
+        request.max_time,
+        request.MealRole,
+        request.tag
+    )
+
+    if recipe is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No matching recipe found in the provided request"
+        )
+    return {"recipe": recipe}

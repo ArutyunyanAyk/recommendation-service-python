@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 
 
 MealRole = Literal[
@@ -38,3 +38,10 @@ class MealRecommendation(BaseModel):
 
 class RecipeListRequest(BaseModel):
     recipes: list[Recipe]
+
+
+class RecipeRecommendationRequest(BaseModel):
+    recipes: list[Recipe]
+    max_time: Optional[int] = None
+    MealRole: Optional[MealRole] = None
+    tag: Optional[str] = None
