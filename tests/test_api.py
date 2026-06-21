@@ -411,3 +411,71 @@ def test_post_random_recipe_by_request():
     assert "recipe" in data
     assert data["recipe"]["cooking_time"] <= 20
     assert "quick" in data["recipe"]["tags"]
+
+
+def test_post_random_meal_by_request():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Котлеты",
+                "cooking_time": 40,
+                "meal_role": "protein",
+                "tags": ["dinner", "high_protein"]
+            },
+            {
+                "id": 2,
+                "title": "Макароны",
+                "cooking_time": 15,
+                "meal_role": "carbs",
+                "tags": ["cheap", "quick"]
+            },
+            {
+                "id": 3,
+                "title": "Овощной салат",
+                "cooking_time": 10,
+                "meal_role": "vegetables",
+                "tags": ["vegetables", "quick", "low_calorie"]
+            }
+        ]
+    }
+
+    response = client.post(
+        "/recommend/random-meal/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "meal" in data
+    assert "protein" in data["meal"]
+    assert "carbs" in data["meal"]
+    assert data["meal"]["protein"]["meal_role"] == "protein"
+    assert data["meal"]["carbs"]["meal_role"] == "carbs"
+
+
+def test_post_random_meal_by_request_not_enough_recipes():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Котлеты",
+                "cooking_time": 40,
+                "meal_role": "protein",
+                "tags": ["high_protein"]
+            }
+        ]
+    }
+
+    response = client.post(
+        "/recommend/random-meal/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == (
+        "No complete meal could be recommended "
+        "from the provided request"
+    )

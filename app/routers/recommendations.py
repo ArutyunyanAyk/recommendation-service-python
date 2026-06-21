@@ -82,3 +82,18 @@ def random_recipe_by_request(request: RecipeRecommendationRequest):
             detail="No matching recipe found in the provided request"
         )
     return {"recipe": recipe}
+
+
+@router.post("/random-meal/by-request",
+             response_model=MealRecommendation)
+def random_meal_by_request(request: RecipeListRequest):
+    recipes_from_request = convert_recipes_to_dicts(request.recipes)
+    meal = recommend_random_meal(recipes_from_request)
+
+    if meal is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No complete meal could be recommended from"
+                   " the provided request"
+        )
+    return {"meal": meal}
