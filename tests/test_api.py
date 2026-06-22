@@ -561,13 +561,14 @@ def test_post_random_recipe_by_request_with_excluded_tags():
             },
             {
                 "id": 2,
-                "title": "Котлеты",
-                "cooking_time": 40,
-                "meal_role": "protein",
-                "tags": ["dinner", "high_protein"]
+                "title": "Острые макароны",
+                "cooking_time": 15,
+                "meal_role": "carbs",
+                "tags": ["cheap", "quick", "spicy"]
             }
         ],
-        "excluded_tags": ["breakfast"]
+        "required_tags": ["quick"],
+        "excluded_tags": ["spicy"]
     }
 
     response = client.post(
@@ -605,5 +606,7 @@ def test_post_random_recipe_by_request_all_recipes_excluded():
     )
 
     assert response.status_code == 404
-    assert response.json()["detail"] == ("No matching recipe found in"
-                                         "the provided request")
+    assert response.json()["detail"] == (
+        "No matching recipe found in the "
+        "provided request"
+    )
