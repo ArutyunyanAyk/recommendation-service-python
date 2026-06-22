@@ -547,3 +547,63 @@ def test_post_random_recipe_by_request_with_unknown_required_tag():
         "No matching recipe found in the "
         "provided request"
     )
+
+
+def test_post_random_recipe_by_request_with_excluded_tags():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Омлет",
+                "cooking_time": 10,
+                "meal_role": "full_meal",
+                "tags": ["breakfast", "quick", "high_protein"]
+            },
+            {
+                "id": 2,
+                "title": "Котлеты",
+                "cooking_time": 40,
+                "meal_role": "protein",
+                "tags": ["dinner", "high_protein"]
+            }
+        ],
+        "excluded_tags": ["breakfast"]
+    }
+
+    response = client.post(
+        "/recommend/random-recipe/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "recipe" in data
+    assert "quick" in data["recipe"]["tags"]
+    assert "spicy" not in data["recipe"]["tags"]
+
+
+def test_post_random_recipe_by_request_all_recipes_excluded():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Острый омлет",
+                "cooking_time": 10,
+                "meal_role": "full_meal",
+                "tags": ["breakfast", "quick", "spicy"]
+            }
+        ],
+        "required_tags": ["quick"],
+        "excluded_tags": ["spicy"]
+    }
+
+    response = client.post(
+        "/recommend/random-recipe/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == ("No matching recipe found in"
+                                         "the provided request")

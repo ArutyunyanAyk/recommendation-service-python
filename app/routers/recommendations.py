@@ -74,7 +74,8 @@ def random_recipe_by_request(request: RecipeRecommendationRequest):
         request.max_time,
         request.MealRole,
         request.tag,
-        request.required_tags
+        request.required_tags,
+        request.excluded_tags
     )
 
     if recipe is None:
