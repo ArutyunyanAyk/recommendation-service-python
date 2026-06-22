@@ -479,3 +479,71 @@ def test_post_random_meal_by_request_not_enough_recipes():
         "No complete meal could be recommended "
         "from the provided request"
     )
+
+
+def test_post_random_recipe_by_request_with_required_tags():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Омлет",
+                "cooking_time": 10,
+                "meal_role": "full_meal",
+                "tags": ["breakfast", "quick", "high_protein"]
+            },
+            {
+                "id": 2,
+                "title": "Котлеты",
+                "cooking_time": 40,
+                "meal_role": "protein",
+                "tags": ["dinner", "high_protein"]
+            },
+            {
+                "id": 3,
+                "title": "Макароны",
+                "cooking_time": 15,
+                "meal_role": "carbs",
+                "tags": ["cheap", "quick"]
+            }
+        ],
+        "required_tags": ["quick", "high_protein"]
+    }
+
+    response = client.post(
+        "/recommend/random-recipe/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "recipe" in data
+    assert "quick" in data["recipe"]["tags"]
+    assert "high_protein" in data["recipe"]["tags"]
+
+
+def test_post_random_recipe_by_request_with_unknown_required_tag():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Омлет",
+                "cooking_time": 10,
+                "meal_role": "full_meal",
+                "tags": ["breakfast", "quick", "high_protein"]
+            }
+        ],
+        "required_tags": ["quick", "unknown_tag"]
+    }
+
+    response = client.post(
+        "/recommend/random-recipe/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == (
+        "No matching recipe found in the "
+        "provided request"
+    )

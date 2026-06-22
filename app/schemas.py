@@ -45,3 +45,4 @@ class RecipeRecommendationRequest(BaseModel):
     max_time: Optional[int] = None
     MealRole: Optional[MealRole] = None
     tag: Optional[str] = None
+    required_tags: list[str] = Field(default_factory=list)
