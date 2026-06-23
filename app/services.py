@@ -8,6 +8,32 @@ def find_recipe_by_id(recipes, recipe_id):
     return None
 
 
+def recipe_matches_filters(
+    recipe,
+    max_time=None,
+    meal_role=None,
+    tag=None,
+    required_tags=None,
+    excluded_tags=None,
+):
+    recipe_tags = recipe.get("tags", [])
+
+    return (
+        (max_time is None or recipe["cooking_time"] <= max_time)
+        and
+        (meal_role is None or recipe["meal_role"] == meal_role)
+        and
+        (tag is None or tag in recipe_tags)
+        and
+        all(required_tag in recipe_tags for required_tag in required_tags)
+        and
+        not any(
+            excluded_tag in recipe_tags
+            for excluded_tag in excluded_tags
+        )
+    )
+
+
 def recommend_random_recipe(
     recipes,
     max_time: int = None,
@@ -26,20 +52,13 @@ def recommend_random_recipe(
         preferred_tags = []
 
     for recipe in recipes:
-        if (
-            (max_time is None or recipe["cooking_time"] <= max_time)
-            and
-            (meal_role is None or recipe["meal_role"] == meal_role)
-            and
-            (tag is None or tag in recipe.get("tags", []))
-            and
-            all(
-                required_tag in recipe.get("tags", [])
-                for required_tag in required_tags
-            )
-            and not
-            any(excluded_tag in recipe.get("tags", [])
-                for excluded_tag in excluded_tags)
+        if recipe_matches_filters(
+            recipe,
+            max_time,
+            meal_role,
+            tag,
+            required_tags,
+            excluded_tags,
         ):
             filtered_recipes.append(recipe)
     if not filtered_recipes:
@@ -69,6 +88,7 @@ def recommend_random_meal(recipes):
     proteins = []
     carbs = []
     vegetables = []
+    sauces = []
     for recipe in recipes:
         if recipe["meal_role"] == "protein":
             proteins.append(recipe)
@@ -76,10 +96,10 @@ def recommend_random_meal(recipes):
             carbs.append(recipe)
         elif recipe["meal_role"] == "vegetables":
             vegetables.append(recipe)
+        elif recipe["meal_role"] == "sauce":
+            sauces.append(recipe)
     if not proteins or not carbs:
         return None
-    if vegetables:
-        random_vegetable = random.choice(vegetables)
     random_protein = random.choice(proteins)
     random_carbs = random.choice(carbs)
     meal = {
@@ -87,7 +107,9 @@ def recommend_random_meal(recipes):
         "carbs": random_carbs
     }
     if vegetables:
-        meal["vegetables"] = random_vegetable
+        meal["vegetables"] = random.choice(vegetables)
+    if sauces:
+        meal["sauce"] = random.choice(sauces)
     return meal
 
 

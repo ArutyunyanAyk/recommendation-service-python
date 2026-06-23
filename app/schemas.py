@@ -30,6 +30,7 @@ class Meal(BaseModel):
     protein: Recipe
     carbs: Recipe
     vegetables: Recipe | None = None
+    sauce: Recipe | None = None
 
 
 class MealRecommendation(BaseModel):
