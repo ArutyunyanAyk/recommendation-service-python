@@ -254,7 +254,7 @@ protein
 carbs
 ```
 
-Если есть `vegetables`, они добавляются дополнительно.
+Если есть `vegetables` или `sauce`, они добавляются дополнительно.
 
 Пример ответа:
 
@@ -281,6 +281,13 @@ carbs
       "cooking_time": 10,
       "meal_role": "vegetables",
       "tags": ["vegetables", "quick", "low_calorie"]
+    },
+    "sauce": {
+      "id": 10,
+      "title": "Томатный соус",
+      "cooking_time": 5,
+      "meal_role": "sauce",
+      "tags": ["sauce", "quick"]
     }
   }
 }
