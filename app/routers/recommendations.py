@@ -6,6 +6,7 @@ from app.schemas import (
     MealRecommendation,
     RecipeListRequest,
     RecipeRecommendationRequest,
+    MealRecommendationRequest,
 )
 from app.services import (
     recommend_random_recipe,
@@ -88,7 +89,7 @@ def random_recipe_by_request(request: RecipeRecommendationRequest):
 
 @router.post("/random-meal/by-request",
              response_model=MealRecommendation)
-def random_meal_by_request(request: RecipeListRequest):
+def random_meal_by_request(request: MealRecommendationRequest):
     recipes_from_request = convert_recipes_to_dicts(request.recipes)
     meal = recommend_random_meal(recipes_from_request)
 

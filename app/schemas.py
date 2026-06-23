@@ -41,6 +41,9 @@ class RecipeListRequest(BaseModel):
     recipes: list[Recipe]
 
 
+class MealRecommendationRequest(BaseModel):
+    recipes: list[Recipe]
+
 class RecipeRecommendationRequest(BaseModel):
     recipes: list[Recipe]
     max_time: Optional[int] = None
