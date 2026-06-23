@@ -91,7 +91,11 @@ def random_recipe_by_request(request: RecipeRecommendationRequest):
              response_model=MealRecommendation)
 def random_meal_by_request(request: MealRecommendationRequest):
     recipes_from_request = convert_recipes_to_dicts(request.recipes)
-    meal = recommend_random_meal(recipes_from_request)
+    meal = recommend_random_meal(
+        recipes_from_request,
+        request.include_vegetables,
+        request.include_sauce
+    )
 
     if meal is None:
         raise HTTPException(

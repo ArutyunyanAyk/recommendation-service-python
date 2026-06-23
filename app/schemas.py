@@ -43,6 +43,9 @@ class RecipeListRequest(BaseModel):
 
 class MealRecommendationRequest(BaseModel):
     recipes: list[Recipe]
+    include_vegetables: bool = True
+    include_sauce: bool = True
+
 
 class RecipeRecommendationRequest(BaseModel):
     recipes: list[Recipe]

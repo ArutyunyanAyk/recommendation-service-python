@@ -84,7 +84,11 @@ def recommend_random_recipe(
     return random.choice(best_recipes)
 
 
-def recommend_random_meal(recipes):
+def recommend_random_meal(
+        recipes,
+        incude_vegetables=True,
+        incude_sauce=True
+        ):
     proteins = []
     carbs = []
     vegetables = []
@@ -106,9 +110,9 @@ def recommend_random_meal(recipes):
         "protein": random_protein,
         "carbs": random_carbs
     }
-    if vegetables:
+    if vegetables and incude_vegetables:
         meal["vegetables"] = random.choice(vegetables)
-    if sauces:
+    if sauces and incude_sauce:
         meal["sauce"] = random.choice(sauces)
     return meal
 

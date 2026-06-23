@@ -654,3 +654,107 @@ def test_post_random_recipe_by_request_with_preferred_tags():
     assert "quick" in data["recipe"]["tags"]
     assert "high_protein" in data["recipe"]["tags"]
     assert "breakfast" in data["recipe"]["tags"]
+
+
+def test_post_random_meal_by_request_without_sauce():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Котлеты",
+                "cooking_time": 40,
+                "meal_role": "protein",
+                "tags": ["high_protein"]
+            },
+            {
+                "id": 2,
+                "title": "Макароны",
+                "cooking_time": 15,
+                "meal_role": "carbs",
+                "tags": ["quick"]
+            },
+            {
+                "id": 3,
+                "title": "Овощной салат",
+                "cooking_time": 10,
+                "meal_role": "vegetables",
+                "tags": ["vegetables"]
+            },
+            {
+                "id": 4,
+                "title": "Томатный соус",
+                "cooking_time": 5,
+                "meal_role": "sauce",
+                "tags": ["sauce", "quick"]
+            }
+        ],
+        "include_vegetables": True,
+        "include_sauce": False
+    }
+
+    response = client.post(
+        "/recommend/random-meal/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "meal" in data
+    assert "protein" in data["meal"]
+    assert "carbs" in data["meal"]
+    assert data["meal"]["vegetables"] is not None
+    assert data["meal"]["sauce"] is None
+
+
+def test_post_random_meal_by_request_without_vegetables():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Котлеты",
+                "cooking_time": 40,
+                "meal_role": "protein",
+                "tags": ["high_protein"]
+            },
+            {
+                "id": 2,
+                "title": "Макароны",
+                "cooking_time": 15,
+                "meal_role": "carbs",
+                "tags": ["quick"]
+            },
+            {
+                "id": 3,
+                "title": "Овощной салат",
+                "cooking_time": 10,
+                "meal_role": "vegetables",
+                "tags": ["vegetables"]
+            },
+            {
+                "id": 4,
+                "title": "Томатный соус",
+                "cooking_time": 5,
+                "meal_role": "sauce",
+                "tags": ["sauce", "quick"]
+            }
+        ],
+        "include_vegetables": False,
+        "include_sauce": True
+    }
+
+    response = client.post(
+        "/recommend/random-meal/by-request",
+        json=payload
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "meal" in data
+    assert "protein" in data["meal"]
+    assert "carbs" in data["meal"]
+    assert data["meal"]["vegetables"] is None
+    assert data["meal"]["sauce"] is not None
