@@ -610,3 +610,47 @@ def test_post_random_recipe_by_request_all_recipes_excluded():
         "No matching recipe found in the "
         "provided request"
     )
+
+
+def test_post_random_recipe_by_request_with_preferred_tags():
+    payload = {
+        "recipes": [
+            {
+                "id": 1,
+                "title": "Омлет",
+                "cooking_time": 10,
+                "meal_role": "full_meal",
+                "tags": ["breakfast", "quick", "high_protein"]
+            },
+            {
+                "id": 2,
+                "title": "Макароны",
+                "cooking_time": 15,
+                "meal_role": "carbs",
+                "tags": ["cheap", "quick"]
+            },
+            {
+                "id": 3,
+                "title": "Котлеты",
+                "cooking_time": 40,
+                "meal_role": "protein",
+                "tags": ["dinner", "high_protein"]
+            }
+        ],
+        "required_tags": ["quick"],
+        "preferred_tags": ["high_protein", "breakfast"]
+    }
+    rsponse = client.post(
+        "/recommend/random-recipe/by-request",
+        json=payload
+    )
+
+    assert rsponse.status_code == 200
+
+    data = rsponse.json()
+
+    assert "recipe" in data
+    assert data["recipe"]["title"] == "Омлет"
+    assert "quick" in data["recipe"]["tags"]
+    assert "high_protein" in data["recipe"]["tags"]
+    assert "breakfast" in data["recipe"]["tags"]

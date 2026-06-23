@@ -14,13 +14,17 @@ def recommend_random_recipe(
     meal_role: str = None,
     tag=None,
     required_tags=None,
-    excluded_tags=None
+    excluded_tags=None,
+    preferred_tags=None
 ):
     filtered_recipes = []
     if required_tags is None:
         required_tags = []
     if excluded_tags is None:
         excluded_tags = []
+    if preferred_tags is None:
+        preferred_tags = []
+
     for recipe in recipes:
         if (
             (max_time is None or recipe["cooking_time"] <= max_time)
@@ -40,8 +44,25 @@ def recommend_random_recipe(
             filtered_recipes.append(recipe)
     if not filtered_recipes:
         return None
-    else:
+    elif not preferred_tags:
         return random.choice(filtered_recipes)
+
+    best_recipes = []
+    best_score = -1
+    for recipe in filtered_recipes:
+        recipe_tags = recipe.get("tags", [])
+
+        score = 0
+
+        for preferred_tag in preferred_tags:
+            if preferred_tag in recipe_tags:
+                score += 1
+        if score > best_score:
+            best_score = score
+            best_recipes = [recipe]
+        elif score == best_score:
+            best_recipes.append(recipe)
+    return random.choice(best_recipes)
 
 
 def recommend_random_meal(recipes):

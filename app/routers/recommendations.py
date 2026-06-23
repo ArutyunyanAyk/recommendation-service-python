@@ -75,9 +75,9 @@ def random_recipe_by_request(request: RecipeRecommendationRequest):
         request.MealRole,
         request.tag,
         request.required_tags,
-        request.excluded_tags
+        request.excluded_tags,
+        request.preferred_tags,
     )
-
     if recipe is None:
         raise HTTPException(
             status_code=404,

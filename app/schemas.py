@@ -47,3 +47,4 @@ class RecipeRecommendationRequest(BaseModel):
     tag: Optional[str] = None
     required_tags: list[str] = Field(default_factory=list)
     excluded_tags: list[str] = Field(default_factory=list)
+    preferred_tags: list[str] = Field(default_factory=list)
