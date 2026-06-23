@@ -437,7 +437,7 @@ POST /recommend/random-meal/by-request
 
 Принимает список рецептов в body и возвращает meal-комбинацию.
 
-Пример body:
+Дополнительно можно управлять необязательными частями meal:
 
 ```json
 {
@@ -462,8 +462,17 @@ POST /recommend/random-meal/by-request
       "cooking_time": 10,
       "meal_role": "vegetables",
       "tags": ["vegetables", "quick", "low_calorie"]
+    },
+    {
+      "id": 4,
+      "title": "Томатный соус",
+      "cooking_time": 5,
+      "meal_role": "sauce",
+      "tags": ["sauce", "quick"]
     }
-  ]
+  ],
+  "include_vegetables": true,
+  "include_sauce": false
 }
 ```
 
