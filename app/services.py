@@ -16,6 +16,13 @@ def recipe_matches_filters(
     required_tags=None,
     excluded_tags=None,
 ):
+
+    if required_tags is None:
+        required_tags = []
+
+    if excluded_tags is None:
+        excluded_tags = []
+
     recipe_tags = recipe.get("tags", [])
 
     return (
@@ -44,10 +51,6 @@ def recommend_random_recipe(
     preferred_tags=None
 ):
     filtered_recipes = []
-    if required_tags is None:
-        required_tags = []
-    if excluded_tags is None:
-        excluded_tags = []
     if preferred_tags is None:
         preferred_tags = []
 
@@ -86,8 +89,8 @@ def recommend_random_recipe(
 
 def recommend_random_meal(
         recipes,
-        incude_vegetables=True,
-        incude_sauce=True
+        include_vegetables=True,
+        include_sauce=True
         ):
     proteins = []
     carbs = []
@@ -110,9 +113,9 @@ def recommend_random_meal(
         "protein": random_protein,
         "carbs": random_carbs
     }
-    if vegetables and incude_vegetables:
+    if vegetables and include_vegetables:
         meal["vegetables"] = random.choice(vegetables)
-    if sauces and incude_sauce:
+    if sauces and include_sauce:
         meal["sauce"] = random.choice(sauces)
     return meal
 

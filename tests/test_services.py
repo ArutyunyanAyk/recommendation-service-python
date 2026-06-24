@@ -1,4 +1,4 @@
-from app.services import recipe_matches_filters
+from app.services import recipe_matches_filters, recommend_random_meal
 
 
 def test_recipe_matches_filters_with_required_tags():
@@ -34,3 +34,118 @@ def test_recipe_does_not_match_excluded_tags():
     )
 
     assert result is False
+
+
+def test_recommend_random_meal_with_required_parts():
+    recipes = [
+        {
+            "id": 1,
+            "title": "Котлеты",
+            "cooking_time": 40,
+            "meal_role": "protein",
+            "tags": ["high_protein"],
+        },
+        {
+            "id": 2,
+            "title": "Макароны",
+            "cooking_time": 15,
+            "meal_role": "carbs",
+            "tags": ["quick"],
+        },
+    ]
+
+    meal = recommend_random_meal(recipes)
+
+    assert meal is not None
+    assert meal["protein"]["meal_role"] == "protein"
+    assert meal["carbs"]["meal_role"] == "carbs"
+
+
+def test_recommend_random_meal_returns_none_without_carbs():
+    recipes = [
+        {
+            "id": 1,
+            "title": "Котлеты",
+            "cooking_time": 40,
+            "meal_role": "protein",
+            "tags": ["high_protein"],
+        }
+    ]
+
+    meal = recommend_random_meal(recipes)
+
+    assert meal is None
+
+
+def test_recommend_random_meal_without_sauce():
+    recipes = [
+        {
+            "id": 1,
+            "title": "Котлеты",
+            "cooking_time": 40,
+            "meal_role": "protein",
+            "tags": ["high_protein"],
+        },
+        {
+            "id": 2,
+            "title": "Макароны",
+            "cooking_time": 15,
+            "meal_role": "carbs",
+            "tags": ["quick"],
+        },
+        {
+            "id": 3,
+            "title": "Томатный соус",
+            "cooking_time": 5,
+            "meal_role": "sauce",
+            "tags": ["sauce", "quick"],
+        },
+    ]
+
+    meal = recommend_random_meal(
+        recipes,
+        include_sauce=False,
+        include_vegetables=True,
+    )
+
+    assert meal is not None
+    assert "protein" in meal
+    assert "carbs" in meal
+    assert "sauce" not in meal
+
+
+def test_recommend_random_meal_without_vegetables():
+    recipes = [
+        {
+            "id": 1,
+            "title": "Котлеты",
+            "cooking_time": 40,
+            "meal_role": "protein",
+            "tags": ["high_protein"],
+        },
+        {
+            "id": 2,
+            "title": "Макароны",
+            "cooking_time": 15,
+            "meal_role": "carbs",
+            "tags": ["quick"],
+        },
+        {
+            "id": 3,
+            "title": "Овощной салат",
+            "cooking_time": 10,
+            "meal_role": "vegetables",
+            "tags": ["vegetables", "quick"],
+        },
+    ]
+
+    meal = recommend_random_meal(
+        recipes,
+        include_vegetables=False,
+        include_sauce=True,
+    )
+
+    assert meal is not None
+    assert "protein" in meal
+    assert "carbs" in meal
+    assert "vegetables" not in meal
