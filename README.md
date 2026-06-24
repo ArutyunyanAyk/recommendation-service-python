@@ -397,25 +397,49 @@ POST /recommend/random-recipe/by-request
     },
     {
       "id": 2,
-      "title": "Котлеты",
-      "cooking_time": 40,
-      "meal_role": "protein",
-      "tags": ["dinner", "high_protein"]
-    },
-    {
-      "id": 3,
       "title": "Макароны",
       "cooking_time": 15,
       "meal_role": "carbs",
       "tags": ["cheap", "quick"]
+    },
+    {
+      "id": 3,
+      "title": "Острые котлеты",
+      "cooking_time": 40,
+      "meal_role": "protein",
+      "tags": ["dinner", "high_protein", "spicy"]
     }
   ],
   "max_time": 20,
-  "tag": "quick"
+  "required_tags": ["quick"],
+  "excluded_tags": ["spicy"],
+  "preferred_tags": ["high_protein", "breakfast"]
 }
 ```
 
+Поддерживаемые фильтры в body:
+
+- `max_time` — максимальное время приготовления;
+- `meal_role` — нужная роль блюда;
+- `tag` — один обязательный тег;
+- `required_tags` — список тегов, которые обязательно должны быть у рецепта;
+- `excluded_tags` — список тегов, которых не должно быть у рецепта;
+- `preferred_tags` — список желательных тегов. Они не обязательны, но увеличивают score рецепта.
+
+Логика подбора:
+
+1. Сначала сервис отфильтровывает рецепты по `max_time`, `meal_role`, `tag`, `required_tags` и `excluded_tags`.
+2. Если `preferred_tags` не переданы, сервис выбирает случайный рецепт из подходящих.
+3. Если `preferred_tags` переданы, сервис считает score для каждого подходящего рецепта.
+4. Рецепты с большим количеством совпадений по `preferred_tags` считаются более подходящими.
+5. Если несколько рецептов имеют одинаковый лучший score, сервис выбирает случайный среди них.
+
 Пример ответа:
+
+В этом примере лучше всего подходит `Омлет`, потому что он:
+- проходит `required_tags`: `quick`;
+- не содержит `excluded_tags`: `spicy`;
+- имеет оба желательных тега из `preferred_tags`: `high_protein` и `breakfast`.
 
 ```json
 {
