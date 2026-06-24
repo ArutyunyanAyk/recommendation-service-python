@@ -41,6 +41,21 @@ def recipe_matches_filters(
     )
 
 
+def calculate_recipe_score(recipe, preferred_tags=None):
+    if preferred_tags is None:
+        preferred_tags = []
+
+    recipe_tags = recipe.get("tags", [])
+
+    score = 0
+
+    for preferred_tag in preferred_tags:
+        if preferred_tag in recipe_tags:
+            score += 1
+
+    return score
+
+
 def recommend_random_recipe(
     recipes,
     max_time: int = None,
@@ -72,13 +87,8 @@ def recommend_random_recipe(
     best_recipes = []
     best_score = -1
     for recipe in filtered_recipes:
-        recipe_tags = recipe.get("tags", [])
+        score = calculate_recipe_score(recipe, preferred_tags)
 
-        score = 0
-
-        for preferred_tag in preferred_tags:
-            if preferred_tag in recipe_tags:
-                score += 1
         if score > best_score:
             best_score = score
             best_recipes = [recipe]

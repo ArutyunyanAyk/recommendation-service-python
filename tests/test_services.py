@@ -1,4 +1,8 @@
-from app.services import recipe_matches_filters, recommend_random_meal
+from app.services import (
+    recipe_matches_filters,
+    recommend_random_meal,
+    calculate_recipe_score,
+)
 
 
 def test_recipe_matches_filters_with_required_tags():
@@ -149,3 +153,37 @@ def test_recommend_random_meal_without_vegetables():
     assert "protein" in meal
     assert "carbs" in meal
     assert "vegetables" not in meal
+
+
+def test_calculate_recipe_score_with_matching_preferred_tags():
+    recipe = {
+        "id": 1,
+        "title": "Омлет",
+        "cooking_time": 10,
+        "meal_role": "full_meal",
+        "tags": ["breakfast", "quick", "high_protein"],
+    }
+
+    score = calculate_recipe_score(
+        recipe,
+        preferred_tags=["high_protein", "breakfast"],
+    )
+
+    assert score == 2
+
+
+def test_calculate_recipe_score_without_matching_preferred_tags():
+    recipe = {
+        "id": 1,
+        "title": "Макароны",
+        "cooking_time": 15,
+        "meal_role": "carbs",
+        "tags": ["cheap", "quick"],
+    }
+
+    score = calculate_recipe_score(
+        recipe,
+        preferred_tags=["high_protein", "breakfast"],
+    )
+
+    assert score == 0
