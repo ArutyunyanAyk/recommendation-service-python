@@ -45,6 +45,8 @@ class MealRecommendationRequest(BaseModel):
     recipes: list[Recipe]
     include_vegetables: bool = True
     include_sauce: bool = True
+    required_tags: list[str] = Field(default_factory=list)
+    excluded_tags: list[str] = Field(default_factory=list)
 
 
 class RecipeRecommendationRequest(BaseModel):

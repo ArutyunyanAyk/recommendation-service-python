@@ -94,7 +94,9 @@ def random_meal_by_request(request: MealRecommendationRequest):
     meal = recommend_random_meal(
         recipes_from_request,
         request.include_vegetables,
-        request.include_sauce
+        request.include_sauce,
+        request.required_tags,
+        request.excluded_tags,
     )
 
     if meal is None:

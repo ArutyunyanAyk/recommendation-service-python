@@ -100,13 +100,30 @@ def recommend_random_recipe(
 def recommend_random_meal(
         recipes,
         include_vegetables=True,
-        include_sauce=True
+        include_sauce=True,
+        required_tags=None,
+        excluded_tags=None
         ):
     proteins = []
     carbs = []
     vegetables = []
     sauces = []
+
+    if required_tags is None:
+        required_tags = []
+
+    if excluded_tags is None:
+        excluded_tags = []
+
     for recipe in recipes:
+
+        if not recipe_matches_filters(
+            recipe,
+            required_tags=required_tags,
+            excluded_tags=excluded_tags,
+        ):
+            continue
+
         if recipe["meal_role"] == "protein":
             proteins.append(recipe)
         elif recipe["meal_role"] == "carbs":
