@@ -93,10 +93,11 @@ def random_meal_by_request(request: MealRecommendationRequest):
     recipes_from_request = convert_recipes_to_dicts(request.recipes)
     meal = recommend_random_meal(
         recipes_from_request,
-        request.include_vegetables,
-        request.include_sauce,
-        request.required_tags,
-        request.excluded_tags,
+        include_vegetables=request.include_vegetables,
+        include_sauce=request.include_sauce,
+        required_tags=request.required_tags,
+        excluded_tags=request.excluded_tags,
+        preferred_tags=request.preferred_tags,
     )
 
     if meal is None:

@@ -56,6 +56,25 @@ def calculate_recipe_score(recipe, preferred_tags=None):
     return score
 
 
+def choose_best_recipe(recipes, preferred_tags=None):
+    if preferred_tags is None:
+        preferred_tags = []
+
+    best_recipes = []
+    best_score = -1
+
+    for recipe in recipes:
+        score = calculate_recipe_score(recipe, preferred_tags)
+
+        if score > best_score:
+            best_score = score
+            best_recipes = [recipe]
+        elif score == best_score:
+            best_recipes.append(recipe)
+
+    return random.choice(best_recipes)
+
+
 def recommend_random_recipe(
     recipes,
     max_time: int = None,
@@ -81,20 +100,10 @@ def recommend_random_recipe(
             filtered_recipes.append(recipe)
     if not filtered_recipes:
         return None
-    elif not preferred_tags:
+    if not preferred_tags:
         return random.choice(filtered_recipes)
 
-    best_recipes = []
-    best_score = -1
-    for recipe in filtered_recipes:
-        score = calculate_recipe_score(recipe, preferred_tags)
-
-        if score > best_score:
-            best_score = score
-            best_recipes = [recipe]
-        elif score == best_score:
-            best_recipes.append(recipe)
-    return random.choice(best_recipes)
+    return choose_best_recipe(filtered_recipes, preferred_tags)
 
 
 def recommend_random_meal(
@@ -102,7 +111,8 @@ def recommend_random_meal(
         include_vegetables=True,
         include_sauce=True,
         required_tags=None,
-        excluded_tags=None
+        excluded_tags=None,
+        preferred_tags=None
         ):
     proteins = []
     carbs = []
@@ -114,6 +124,9 @@ def recommend_random_meal(
 
     if excluded_tags is None:
         excluded_tags = []
+
+    if preferred_tags is None:
+        preferred_tags = []
 
     for recipe in recipes:
 
@@ -134,16 +147,18 @@ def recommend_random_meal(
             sauces.append(recipe)
     if not proteins or not carbs:
         return None
-    random_protein = random.choice(proteins)
-    random_carbs = random.choice(carbs)
+    selected_protein = choose_best_recipe(proteins, preferred_tags)
+    selected_carbs = choose_best_recipe(carbs, preferred_tags)
+
     meal = {
-        "protein": random_protein,
-        "carbs": random_carbs
+        "protein": selected_protein,
+        "carbs": selected_carbs,
     }
     if vegetables and include_vegetables:
-        meal["vegetables"] = random.choice(vegetables)
+        meal["vegetables"] = choose_best_recipe(vegetables, preferred_tags)
+
     if sauces and include_sauce:
-        meal["sauce"] = random.choice(sauces)
+        meal["sauce"] = choose_best_recipe(sauces, preferred_tags)
     return meal
 
 
