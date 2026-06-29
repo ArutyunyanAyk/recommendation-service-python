@@ -187,3 +187,82 @@ def test_calculate_recipe_score_without_matching_preferred_tags():
     )
 
     assert score == 0
+
+
+def test_recommend_random_meal_with_required_tags():
+    recipes = [
+        {
+            "id": 1,
+            "title": "Куриная грудка",
+            "cooking_time": 25,
+            "meal_role": "protein",
+            "tags": ["high_protein", "quick"],
+        },
+        {
+            "id": 2,
+            "title": "Рис",
+            "cooking_time": 20,
+            "meal_role": "carbs",
+            "tags": ["carbs", "quick"],
+        },
+        {
+            "id": 3,
+            "title": "Котлеты",
+            "cooking_time": 40,
+            "meal_role": "protein",
+            "tags": ["high_protein", "dinner"],
+        },
+    ]
+
+    meal = recommend_random_meal(
+        recipes,
+        required_tags=["quick"],
+    )
+
+    assert meal is not None
+    assert "quick" in meal["protein"]["tags"]
+    assert "quick" in meal["carbs"]["tags"]
+
+
+def test_recommend_random_meal_with_excluded_tags():
+    recipes = [
+        {
+            "id": 1,
+            "title": "Куриная грудка",
+            "cooking_time": 25,
+            "meal_role": "protein",
+            "tags": ["high_protein", "quick"],
+        },
+        {
+            "id": 2,
+            "title": "Рис",
+            "cooking_time": 20,
+            "meal_role": "carbs",
+            "tags": ["carbs", "quick"],
+        },
+        {
+            "id": 3,
+            "title": "Острый соус",
+            "cooking_time": 5,
+            "meal_role": "sauce",
+            "tags": ["sauce", "quick", "spicy"],
+        },
+        {
+            "id": 4,
+            "title": "Томатный соус",
+            "cooking_time": 5,
+            "meal_role": "sauce",
+            "tags": ["sauce", "quick"],
+        },
+    ]
+
+    meal = recommend_random_meal(
+        recipes,
+        include_sauce=True,
+        required_tags=["quick"],
+        excluded_tags=["spicy"],
+    )
+
+    assert meal is not None
+    assert meal["sauce"] is not None
+    assert "spicy" not in meal["sauce"]["tags"]
